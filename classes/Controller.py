@@ -3,8 +3,8 @@
 # -*- coding: utf-8 -*-
 
 #import classes.Vehicle
-import classes.Vehicle as Vehicle
 import random
+import classes.Vehicle as Vehicle
 
 
 class Controller:
@@ -17,7 +17,6 @@ class Controller:
 
         setup_line = setup.get('lanes')
         self.__n_lanes = setup_line.get('n_lanes')
-        self.__max_lanes = setup_line.get('max_lanes')
         self.__lane_length = setup_line.get('lane_length')
         self.__lane_v = setup_line.get('lane_v')
 
@@ -45,13 +44,21 @@ class Controller:
 
         # add new vehicles ad lib.
         if (timestep % 5 == 0 and timestep < 250):
-            lane = random.randint(0, self.__max_lanes - 1)
+            lane = random.randint(0, self.__n_lanes - 1)
             self.__vehicles.insert(0, Vehicle.Vehicle(
                 "v_" + str(timestep), lane, self.__lane_v[lane], timestep, self.__setup))
 
         # sort vehicles by their position
 
-        sorted(self.__vehicles, key=lambda vehicle: vehicle.get_position())
+        self.__vehicles = sorted(
+            self.__vehicles, key=lambda vehicle: vehicle.get_position())
 
-        while self.__vehicles[len(self.__vehicles) - 1].get_position() > self.__lane_length:
-            self.__vehicle_archive.append(self.__vehicles.pop())
+        while self.__vehicles and self.__vehicles[-1].get_position() >= self.__lane_length:
+            vehicle = self.__vehicles.pop()
+            # move archived vehicles to lane n_lane to mark thar vehicle is not in system anymore
+            vehicle.position_archive[timestep + 1:, 1] = self.__n_lanes
+            vehicle.position_archive[timestep + 1:, 0] = self.__lane_length
+            self.__vehicle_archive.append(vehicle)
+
+    def get_vehicles(self):
+        return self.__vehicle_archive + self.__vehicles

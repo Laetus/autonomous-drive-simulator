@@ -2,9 +2,10 @@
 """Simple Vehicle Model"""
 # -*- coding: utf-8 -*-
 
-import time
+
 import util as u
 import math
+import numpy as np
 
 
 class Vehicle:
@@ -26,6 +27,12 @@ class Vehicle:
         self.__a_max = setup_car.get('a_max')
         self.__length = setup_car.get('max_length')
 
+        self.position_archive = np.zeros(
+            [u.get_time_values_from_setup(setup)[2], 3])
+
+        # set lane of previous steps to -1 to mark that vehicle was not in system
+        self.position_archive[:timestep, 1] = -1
+
         print('creating a new vehicle with name ' + self.__name)
 
     def __str__(self):
@@ -40,7 +47,7 @@ class Vehicle:
 
     def safety_distance(self):
         """ returns saftey_distance for vehicle in its current state"""
-        return 500  # TODO implement an use me
+        return self.__length + 500  # TODO implement an use me
 
     def update(self, timestep):
         """ models the transition between the vehicle's state at timestep i and i+1  """
@@ -48,11 +55,15 @@ class Vehicle:
         self.__position += self.__velocity * \
             self.__setup.get('time').get('delta_t')
 
+        # save position
+        self.position_archive[timestep, :] = [
+            self.__position, self.__lane, self.safety_distance()]
+
     def set_desired_velocity(self, desired_velocity):
         self.__desired_velocity = max(0, min(desired_velocity, self.v_max))
 
     def set_desired_lane(self, desired_lane):
-        if (abs(int(desired_lane) - self.__lane) <= 1 and int(desired_lane) < self.__setup.get('lanes').get('max_lanes')):
+        if (abs(int(desired_lane) - self.__lane) <= 1 and int(desired_lane) < self.__setup.get('lanes').get('n_lanes')):
             self.__desired_lane = int(desired_lane)
 
     def get_lane(self):
