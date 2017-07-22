@@ -36,7 +36,7 @@ def animate_result(vehicles, setup):
         artist='Philipp Froehlich'), bitrate=1800)
 
     for i in range(len(vehicles)):
-        lobj = ax.plot([], [])[0]
+        lobj = ax.plot([], [],linewidth=4)[0]
         lines.append(lobj)
 
     def init():
