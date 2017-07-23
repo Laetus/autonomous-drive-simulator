@@ -17,21 +17,23 @@ setup = {
     'lanes': {
         'n_lanes': 4,           # number of lanes
         'lane_length': 2e3,     # lane length in meter
-        'lane_v': [u.kmh2ms(100), u.kmh2ms(120), u.kmh2ms(150), u.kmh2ms(190), u.kmh2ms(240)]
+        'lane_v': [u.kmh2ms(100), u.kmh2ms(120), u.kmh2ms(150), u.kmh2ms(190), u.kmh2ms(240)],
+        # describes when a new car enters the system. (in percentage of horizon)
+        'spawn_parameter': 0.925
     },
     'cars': {
         'v_max': u.kmh2ms(250),     # max velocity in meter per second
         'a_max': 4,                 # max acceleration in meter per second^2
-        'a_range' : 1.5,           # range of the chosen acceleration
-        'error_magnitude' : 1e-1 ,   # magnitude of the error added to velocity
-        'max_length': 4 ,           # maxium car length in meter
-        'horizon' : 500             # horizon of the car
+        'a_range': 1.5,           # range of the chosen acceleration
+        'error_magnitude': 1e-1,   # magnitude of the error added to velocity
+        'max_length': 4,           # maxium car length in meter
+        'horizon': 500             # horizon of the car
     }
 }
 
 # Initialisation
 
-assert 0 < setup.get('lanes').get('n_lanes')
+assert setup.get('lanes').get('n_lanes') > 0
 
 controller = Controller.Controller(setup)
 controller.init()
@@ -41,7 +43,7 @@ t, delta_t, n_steps, t_max = u.get_time_values_from_setup(setup)
 t_act = t
 durations = np.zeros([n_steps, 1])
 for step in range(0, n_steps):
-    
+
     print('Calculating time step ' + str(step) +
           '. Current time: ' + str(t_act))
     start = time.time()
@@ -68,5 +70,3 @@ vehicles = controller.get_vehicles()
 u.plot_durations(durations, setup)
 
 u.animate_result(vehicles, setup)
-
-

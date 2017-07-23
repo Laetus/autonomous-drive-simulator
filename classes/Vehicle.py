@@ -42,38 +42,51 @@ class Vehicle:
         print('creating a new vehicle with name ' + self.__name)
 
     def __str__(self):
-        return "Vehicle " + str(self.__name) + "\tproperties: " + "lane: " + \
-            str(self.__lane) + " position: " + str(round(self.__position, 4)) + \
-            "\tvelocity: " + str(round(self.__velocity, 5))
+        retVal = "Vehicle " + str(self.__name) + "\tproperties: " + "lane: " + \
+            str(self.__lane) + " position: " + str(round(self.__position, 4)) + "\tvelocity: " + \
+            str(round(self.__velocity, 4)) + "\tsafety distance: " + \
+            str(round(self.safety_distance(), 4))
+
+        if self.__predecessor:
+            retVal += "\tpredecessor at : " + \
+                str(round(self.__predecessor.get_position(), 4))
+        else:
+            retVal += "\tpredecessor not in horizon."
+
+        return retVal
 
     def decide(self, timestep):
         """ models how the vehicle tries to match the desired values """
-       
-        if not self.__predecessor: 
-            self.__acceleration = random.random() * self.__a_range * np.sign(self.__desired_velocity - self.__velocity + random.random()* 1e-5)
-        else:
-            self.__acceleration = (random.random() -1 ) * self.__a_range
 
-        print("Vehicle " + self.__name + " chooses acceleration> " + str(round(self.__acceleration,4)))
+        if not self.__predecessor:
+            self.__acceleration = random.random() * self.__a_range * \
+                np.sign(self.__desired_velocity -
+                        self.__velocity + random.random() * 1e-5)
+        else:
+            self.__acceleration = (random.random() - 1) * self.__a_range
+
+        print("Vehicle " + self.__name + " chooses acceleration> " +
+              str(round(self.__acceleration, 4)))
 
     def safety_distance(self):
         """ returns saftey_distance for vehicle in its current state"""
         min_dist = 2 * self.__length
-        reaction_dist =(3 * self.__delta_t * self.__velocity)
+        reaction_dist = (3 * self.__delta_t * self.__velocity)
         break_dist = (0.5 * self.__velocity**2 / self.__a_max)
         return reaction_dist + break_dist + min_dist
 
     def update(self, timestep):
         """ models the transition between the vehicle's state at timestep i and i+1  """
 
-        self.__velocity += self.__acceleration * self.__delta_t + ((random.random() - 0.5 ) * self.__error)
-        self.__position += self.__velocity * self.__delta_t 
-        
+        self.__velocity += self.__acceleration * self.__delta_t + \
+            ((random.random() - 0.5) * self.__error)
+        self.__position += self.__velocity * self.__delta_t
+
         # check validity of acceleration and velocity
-        assert self.__a_max > abs( self.__acceleration )
-        assert self.v_max >=  self.__velocity >= 0
-        
-        if self.__predecessor :
+        assert self.__a_max > abs(self.__acceleration)
+        assert self.v_max >= self.__velocity >= 0
+
+        if self.__predecessor:
             assert self.__predecessor.get_position() - self.__position > self.safety_distance()
 
         # save position

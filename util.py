@@ -36,7 +36,7 @@ def animate_result(vehicles, setup):
         artist='Philipp Froehlich'), bitrate=1800)
 
     for i in range(len(vehicles)):
-        lobj = ax.plot([], [],linewidth=4)[0]
+        lobj = ax.plot([], [], linewidth=4)[0]
         lines.append(lobj)
 
     def init():
@@ -46,10 +46,22 @@ def animate_result(vehicles, setup):
 
     def animate(frame_number):
         for lnum, line in enumerate(lines):
-            act = vehicles[lnum].position_archive[frame_number:frame_number + 2, :2]
+            act = np.zeros([2, 2])
+            # position
+            act[:, 0] = vehicles[lnum].position_archive[frame_number, 0]
+            # lane
+            act[:, 1] = vehicles[lnum].position_archive[frame_number, 1]
+            # add saftey_distance
+            act[1, 0] += vehicles[lnum].position_archive[frame_number, 2]
             # print(act)
             line.set_data(np.transpose(act))
         return tuple(lines)
+
+    plt.xlabel('position [m]')
+
+    plt.ylabel(' lane number')
+
+    plt.title('animation of the safety bouding box of every car')
 
     anim = animation.FuncAnimation(
         fig, animate, init_func=init, frames=n_steps, interval=50, blit=True)
@@ -63,6 +75,10 @@ def plot_durations(durations, setup):
     """ plot durations """
     t, delta_t, n_steps, t_max = get_time_values_from_setup(setup)
     fig = plt.figure()
+
+    plt.xlabel('Step number ')
+    plt.ylabel('Time [s]')
+    plt.title('Calculation Times')
 
     ax = plt.axes(xlim=(0, n_steps),
                   ylim=(0, max(durations)[0] * 1.1))
